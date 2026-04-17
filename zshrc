@@ -116,4 +116,97 @@ esac
 [[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
 
 # --- Local overrides (not tracked) ---
+# ~/.zshrc.local is written by install.sh and holds per-machine vars
+# (GREET_NAME / GREET_CITY / GREET_LANG / secrets / tweaks).
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+# --- Greeting ---
+# Full-width banner with ASCII mascot + date + weather, shown on every
+# interactive shell start. Config from ~/.zshrc.local:
+#   GREET_NAME / GREET_CITY / GREET_LANG  (zh | en)
+# Weather via wttr.in, cached 30 min in ~/.cache/dotfile, refreshed async
+# so the shell never blocks on the network.
+_greet() {
+  [[ -o interactive ]] || return
+  local name="${GREET_NAME:-$USER}"
+  local city="${GREET_CITY:-}"
+  local lang="${GREET_LANG:-zh}"
+
+  local hour=${$(date +%H)#0}
+  local hi
+  if [[ "$lang" == "en" ]]; then
+    if   (( hour < 5 ));  then hi="Late night"
+    elif (( hour < 12 )); then hi="Good morning"
+    elif (( hour < 18 )); then hi="Good afternoon"
+    else                       hi="Good evening"
+    fi
+  else
+    if   (( hour < 5 ));  then hi="夜深了"
+    elif (( hour < 12 )); then hi="早安"
+    elif (( hour < 18 )); then hi="午安"
+    else                       hi="晚安"
+    fi
+  fi
+
+  local date_str
+  if [[ "$lang" == "en" ]]; then
+    date_str="$(date "+%Y/%m/%d %a")"
+  else
+    local -a wd=(一 二 三 四 五 六 日)
+    date_str="$(date +%Y/%m/%d) 週${wd[$(date +%u)]}"
+  fi
+
+  local weather=""
+  if [[ -n "$city" ]] && command -v curl >/dev/null 2>&1; then
+    local cache_dir="$HOME/.cache/dotfile"
+    local cache="$cache_dir/weather.${city// /_}.${lang}"
+    mkdir -p "$cache_dir"
+    if [[ -f "$cache" ]]; then
+      local age=$(( $(date +%s) - $(stat -f %m "$cache") ))
+      (( age < 1800 )) && weather="$(cat "$cache")"
+    fi
+    # async refresh for next shell
+    ( curl -sf --max-time 4 \
+        "wttr.in/${city}?format=%l:+%c+%t+%C&lang=${lang}" \
+        > "$cache.tmp" 2>/dev/null \
+        && mv "$cache.tmp" "$cache" ) &!
+  fi
+
+  local -a tips_zh=(
+    "z <dir> 跳到常用目錄"
+    "ctrl+r 搜歷史"
+    "bat <file> 取代 cat"
+    "tree -L 2 看目錄結構"
+    "gh pr view 看 PR"
+    "nvml 載入 nvm"
+  )
+  local -a tips_en=(
+    "z <dir> — jump to frecent dirs"
+    "ctrl+r — fuzzy history"
+    "bat <file> — better cat"
+    "tree -L 2 — quick tree"
+    "gh pr view — inspect PR"
+    "nvml — load nvm lazily"
+  )
+  local tip
+  if [[ "$lang" == "en" ]]; then
+    tip="${tips_en[$((RANDOM % ${#tips_en[@]} + 1))]}"
+  else
+    tip="${tips_zh[$((RANDOM % ${#tips_zh[@]} + 1))]}"
+  fi
+
+  local dim=$'\e[2m' pink=$'\e[38;5;218m' reset=$'\e[0m'
+  local cols=${COLUMNS:-$(tput cols 2>/dev/null || echo 80)}
+  local sep=""
+  local i
+  for (( i = 0; i < cols; i++ )); do sep+="─"; done
+
+  print
+  printf "  %s∩___∩%s     %s? %s%s\n"   "$pink" "$reset" "$dim" "$tip" "$reset"
+  printf " %s( ・ω・)%s   %s, %s 👋\n"  "$pink" "$reset" "$hi" "$name"
+  printf "  %sづ づ %s    %s\n"         "$pink" "$reset" "$date_str"
+  printf "   %s¯¯¯%s      %s\n"         "$pink" "$reset" "${weather:-—}"
+  printf "%s%s%s\n"                     "$dim" "$sep" "$reset"
+}
+_greet
+unset -f _greet

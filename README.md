@@ -1,7 +1,9 @@
-# sammy-dotfile
+# dotfile
 
-My personal dotfiles. Started life in 2012 as an oh-my-zsh theme (`sammy.zsh-theme`),
-now grown into a full setup with zinit + starship + brew bundle.
+Sammy's personal dotfiles — one repo, multiple Macs.
+
+Started in 2012 as a single oh-my-zsh theme; now a full zsh + zinit +
+starship + brew bundle setup. Original theme is in git history.
 
 ## Setup on a new machine
 
@@ -12,52 +14,74 @@ cd ~/.dotfiles
 ```
 
 `install.sh` will:
-- symlink `zshrc` → `~/.zshrc`
-- symlink `zshenv` → `~/.zshenv`
-- symlink `starship.toml` → `~/.config/starship.toml`
-- run `brew bundle` to install everything in `Brewfile`
 
-Existing files get backed up to `*.backup.<timestamp>` before linking.
+1. Symlink `zshrc` / `zshenv` / `starship.toml` into `$HOME`
+   (existing files get backed up to `*.backup.<timestamp>` first;
+   if the symlink already points to the right place it prints `ok`
+   and does nothing).
+2. Prompt for greeting personalization and write to `~/.zshrc.local`
+   (**not** tracked — machine-local).
+3. Run `brew bundle --no-upgrade` to install anything in `Brewfile`.
+
+Flags:
+
+- `--no-brew` skip step 3 (quick re-link / re-config)
+- `--reconfig` wipe the `GREET_*` block in `~/.zshrc.local` and re-prompt
 
 ## Layout
 
 | File | Purpose |
-| --- | --- |
-| `zshrc` | main shell config — aliases, plugins, starship, zinit |
-| `zshenv` | early env (cargo, etc.) |
-| `starship.toml` | prompt config (Catppuccin palette, minimal pills) |
-| `Brewfile` | all brew formulae / casks / taps |
-| `install.sh` | symlink + brew bundle bootstrap |
-| `sammy.zsh-theme` | legacy oh-my-zsh theme (kept for nostalgia) |
+|---|---|
+| `zshrc` | main shell config — aliases, plugins, starship, zinit, greeting |
+| `zshenv` | early env (cargo) |
+| `starship.toml` | prompt config (Catppuccin, minimal-pills) |
+| `Brewfile` | all formulae / casks / taps |
+| `install.sh` | symlink + greeting prompt + brew bundle |
+| `CLAUDE.md` | context for Claude Code when working in this repo |
+
+## Shell greeting
+
+Every interactive shell prints a full-width banner:
+
+```
+  ∩___∩     ? <tip>
+ ( ・ω・)   早安, Sammy 👋
+  づ づ     2026/04/17 週五
+   ¯¯¯      Taipei: 🌦 +22°C 小雨
+────────────────────────────────────────
+```
+
+Config lives in `~/.zshrc.local`:
+
+```sh
+export GREET_NAME="Sammy"
+export GREET_CITY="Taipei"   # empty = disable weather
+export GREET_LANG="zh"       # zh | en
+```
+
+Weather uses [wttr.in](https://wttr.in) with a 30-minute cache in
+`~/.cache/dotfile/`. The shell never blocks on the network —
+refreshes happen async in the background.
 
 ## Local overrides
 
-`zshrc` sources `~/.zshrc.local` at the end if it exists — put machine-specific
-secrets or tweaks there. It is **not** tracked.
+`~/.zshrc.local` is sourced at the end of `zshrc`. Put machine-specific
+env, secrets, PATH tweaks, work-only aliases, etc. there. It's never
+tracked.
 
 ## Keeping machines in sync
 
-Each machine has `~/.dotfiles` as a clone of this repo. To sync:
+Pull changes:
 
 ```sh
 cd ~/.dotfiles && git pull
-# if Brewfile changed:
-brew bundle --file=Brewfile
+brew bundle --file=Brewfile --no-upgrade   # if Brewfile changed
 ```
 
-To push a change from any machine:
+Push changes:
 
 ```sh
 cd ~/.dotfiles
 # edit files, then:
 git add -A && git commit -m "..." && git push
-```
-
-## Legacy usage (oh-my-zsh theme only)
-
-The original `sammy.zsh-theme` still works if you want just the theme:
-
-```sh
-ln -s ~/.dotfiles/sammy.zsh-theme ~/.oh-my-zsh/themes/sammy-lin.zsh-theme
-# then set ZSH_THEME="sammy-lin" in ~/.zshrc
 ```
