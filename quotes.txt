@@ -1,0 +1,15 @@
+# Default quotes — shown when ~/.config/dotfile/quotes.txt doesn't exist.
+# One quote per line. Lines starting with # are ignored.
+
+Simplicity is the ultimate sophistication. — Leonardo da Vinci
+Premature optimization is the root of all evil. — Donald Knuth
+Make it work, make it right, make it fast. — Kent Beck
+Talk is cheap. Show me the code. — Linus Torvalds
+First, solve the problem. Then, write the code. — John Johnson
+Programs must be written for people to read, and only incidentally for machines to execute. — Harold Abelson
+Any fool can write code that a computer can understand. Good programmers write code that humans can understand. — Martin Fowler
+Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away. — Antoine de Saint-Exupéry
+The best way to predict the future is to invent it. — Alan Kay
+The function of good software is to make the complex appear to be simple. — Grady Booch
+It is not that we have a short time to live, but that we waste a lot of it. — Seneca
+The obstacle is the way. — Marcus Aurelius

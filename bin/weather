@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# weather <city> [lang]
+# Fetches wttr.in JSON once and prints a single-line summary:
+#   <city> <current°> (<min>~<max>°) <emoji|🌧XX%> <desc>
+# Called by install.sh (warm cache) and by zshrc greeting (async refresh).
+# Requires: curl, jq.
+set -euo pipefail
+
+city="${1:-Taipei}"
+lang="${2:-zh}"
+
+command -v curl >/dev/null 2>&1 || { echo "curl not found" >&2; exit 1; }
+command -v jq   >/dev/null 2>&1 || { echo "jq not found"   >&2; exit 1; }
+
+json=$(curl -sf --max-time 5 "https://wttr.in/${city}?format=j1") || exit 1
+
+temp=$(jq -r '.current_condition[0].temp_C'                 <<<"$json")
+mint=$(jq -r '.weather[0].mintempC'                          <<<"$json")
+maxt=$(jq -r '.weather[0].maxtempC'                          <<<"$json")
+rain=$(jq -r '[.weather[0].hourly[].chanceofrain | tonumber] | max' <<<"$json")
+code=$(jq -r '.current_condition[0].weatherCode'             <<<"$json")
+desc_en=$(jq -r '.current_condition[0].weatherDesc[0].value' <<<"$json")
+
+# Emoji for the current condition (wttr.in weatherCode → emoji).
+case "$code" in
+  113)                                      emoji="☀" ;;
+  116)                                      emoji="⛅" ;;
+  119|122)                                  emoji="☁" ;;
+  143|248|260)                              emoji="🌫" ;;
+  200|386|389|392|395)                      emoji="⛈" ;;
+  176|263|266|281|284|293|296|299|302|305|308|311|314|353|356|359|362|365) emoji="🌧" ;;
+  179|182|185|227|230|317|320|323|326|329|332|335|338|350|368|371|374|377) emoji="🌨" ;;
+  *)                                        emoji="🌡" ;;
+esac
+
+# Chinese description mapped from weatherCode (wttr.in JSON only ships English).
+desc_zh() {
+  case "$1" in
+    113) echo "晴" ;;
+    116) echo "局部多雲" ;;
+    119) echo "多雲" ;;
+    122) echo "陰天" ;;
+    143|248|260) echo "有霧" ;;
+    176) echo "偶陣雨" ;;
+    179) echo "偶陣雪" ;;
+    182) echo "偶雨雪" ;;
+    200) echo "雷陣雨" ;;
+    263|266|293|296) echo "小雨" ;;
+    281|284) echo "凍雨" ;;
+    299|302) echo "中雨" ;;
+    305|308) echo "大雨" ;;
+    311|314) echo "凍雨" ;;
+    317|320) echo "雨雪" ;;
+    323|326|368) echo "小雪" ;;
+    329|332|371) echo "中雪" ;;
+    335|338) echo "大雪" ;;
+    353) echo "陣雨" ;;
+    356) echo "強陣雨" ;;
+    359) echo "豪雨" ;;
+    386|389) echo "雷雨" ;;
+    392|395) echo "雷雪" ;;
+    *) echo "$2" ;;   # fallback to English
+  esac
+}
+
+if [[ "$lang" == "zh" ]]; then
+  desc=$(desc_zh "$code" "$desc_en")
+else
+  desc="$desc_en"
+fi
+
+# If it's rainy (>= 30% chance), lead with the rain chance; else lead with emoji.
+if (( rain >= 30 )); then
+  cond="🌧${rain}%"
+else
+  cond="$emoji"
+fi
+
+printf "%s %s° (%s~%s°) %s %s\n" "$city" "$temp" "$mint" "$maxt" "$cond" "$desc"

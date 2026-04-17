@@ -59,16 +59,15 @@ personalize_greeting() {
   } >> "$LOCAL"
   echo "  wrote $LOCAL"
 
-  # Warm weather cache so the first shell already shows weather
-  if [[ -n "$city" ]] && command -v curl >/dev/null 2>&1; then
+  # Warm weather cache so the first shell already shows weather.
+  # Cache is per-day (see zshrc _greet) — we just populate it here.
+  if [[ -n "$city" ]]; then
     local cache_dir="$HOME/.cache/dotfile"
     local cache="$cache_dir/weather.${city// /_}.${lang}"
     mkdir -p "$cache_dir"
-    if curl -sf --max-time 5 \
-         "wttr.in/${city}?format=%l:+%c+%t+%C&lang=${lang}" \
-         > "$cache.tmp" 2>/dev/null; then
+    if "$DIR/bin/weather" "$city" "$lang" > "$cache.tmp" 2>/dev/null; then
       mv "$cache.tmp" "$cache"
-      echo "  warmed weather cache ($(cat "$cache"))"
+      echo "  warmed weather cache: $(cat "$cache")"
     else
       rm -f "$cache.tmp"
       echo "  weather warm-up failed (will retry on shell start)"

@@ -44,10 +44,10 @@ Flags:
 Every interactive shell prints a full-width banner:
 
 ```
-  ∩___∩     ? <tip>
+  ∩___∩     <random quote>
  ( ・ω・)   早安, Sammy 👋
   づ づ     2026/04/17 週五
-   ¯¯¯      Taipei: 🌦 +22°C 小雨
+   ¯¯¯      Taipei 24° (23~29°) 🌧100% 局部多雲
 ────────────────────────────────────────
 ```
 
@@ -59,9 +59,18 @@ export GREET_CITY="Taipei"   # empty = disable weather
 export GREET_LANG="zh"       # zh | en
 ```
 
-Weather uses [wttr.in](https://wttr.in) with a 30-minute cache in
-`~/.cache/dotfile/`. The shell never blocks on the network —
-refreshes happen async in the background.
+**Weather** comes from [wttr.in](https://wttr.in) via `bin/weather`
+(current temp + today's min/max + rain probability + condition). Cached
+**once per day** in `~/.cache/dotfile/` — first shell of the day
+refreshes async so the network never blocks the shell.
+
+**Quotes** come from:
+
+1. `~/.config/dotfile/quotes.txt` — your personal collection (**not**
+   tracked by git). Create it freely — one quote per line, `#` starts a
+   comment.
+2. `quotes.txt` in this repo — English fallback used when the personal
+   file doesn't exist.
 
 ## Local overrides
 

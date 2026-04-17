@@ -31,7 +31,9 @@ since removed from HEAD but still in git history).
 | `zshenv` | Very early env (cargo) |
 | `starship.toml` | Prompt config |
 | `Brewfile` | Declarative package list for `brew bundle` |
-| `install.sh` | Symlink + `brew bundle` + interactive greeting personalization |
+| `install.sh` | Symlink + `brew bundle` + interactive greeting personalization + cache warm-up |
+| `bin/weather` | Helper: fetches wttr.in JSON, outputs single-line weather summary with min/max + rain% |
+| `quotes.txt` | English fallback quotes (used if `~/.config/dotfile/quotes.txt` missing) |
 | `README.md` | Human-facing usage |
 | `CLAUDE.md` | This file |
 
@@ -54,9 +56,12 @@ Machine-local file (**not** in this repo, written by `install.sh`):
 4. **Brewfile edits:** prefer hand edits (alphabetical within the `brew`
    block). `brew bundle dump --file=Brewfile --force` can regenerate but
    drags in cruft — review the diff before committing.
-5. **Greeting (`_greet` in `zshrc`):** must not block shell startup. Weather
-   is fetched async with a 30-min cache in `~/.cache/dotfile/`. Don't add
-   synchronous network calls to the greet path.
+5. **Greeting (`_greet` in `zshrc`):** must not block shell startup.
+   Weather is cached **per calendar day** in `~/.cache/dotfile/` — refresh
+   happens async in the background. Quotes are picked from
+   `~/.config/dotfile/quotes.txt` (personal, untracked) or `quotes.txt`
+   (tracked fallback). Don't add synchronous network calls to the greet
+   path.
 6. **Don't break the symlink contract.** `install.sh` expects each tracked
    filename to map to exactly one `$HOME` destination. If you add a new
    tracked config, add a matching `link` call in `install.sh`.

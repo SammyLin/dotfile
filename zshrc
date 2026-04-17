@@ -121,11 +121,12 @@ esac
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
 # --- Greeting ---
-# Full-width banner with ASCII mascot + date + weather, shown on every
-# interactive shell start. Config from ~/.zshrc.local:
-#   GREET_NAME / GREET_CITY / GREET_LANG  (zh | en)
-# Weather via wttr.in, cached 30 min in ~/.cache/dotfile, refreshed async
-# so the shell never blocks on the network.
+# Full-width banner shown on every interactive shell start. Config from
+# ~/.zshrc.local: GREET_NAME / GREET_CITY / GREET_LANG (zh | en).
+# Quotes come from ~/.config/dotfile/quotes.txt if it exists, else from
+# the tracked ~/.dotfiles/quotes.txt. Weather uses ~/.dotfiles/bin/weather
+# with a once-per-day cache in ~/.cache/dotfile/ — the first shell of the
+# day refreshes async so it never blocks.
 _greet() {
   [[ -o interactive ]] || return
   local name="${GREET_NAME:-$USER}"
@@ -156,43 +157,40 @@ _greet() {
     date_str="$(date +%Y/%m/%d) 週${wd[$(date +%u)]}"
   fi
 
+  # Weather — cache once per day. Refresh async if cache is stale.
   local weather=""
-  if [[ -n "$city" ]] && command -v curl >/dev/null 2>&1; then
+  if [[ -n "$city" ]]; then
     local cache_dir="$HOME/.cache/dotfile"
     local cache="$cache_dir/weather.${city// /_}.${lang}"
+    local today=$(date +%Y%m%d)
     mkdir -p "$cache_dir"
-    if [[ -f "$cache" ]]; then
-      local age=$(( $(date +%s) - $(stat -f %m "$cache") ))
-      (( age < 1800 )) && weather="$(cat "$cache")"
+
+    local cache_day=""
+    [[ -f "$cache" ]] && cache_day=$(date -r "$(stat -f %m "$cache")" +%Y%m%d 2>/dev/null)
+
+    if [[ "$cache_day" == "$today" ]]; then
+      weather="$(cat "$cache")"
+    else
+      [[ -f "$cache" ]] && weather="$(cat "$cache")  ·  (更新中)"
+      # Async refresh — don't block the shell
+      ( "$HOME/.dotfiles/bin/weather" "$city" "$lang" > "$cache.tmp" 2>/dev/null \
+          && mv "$cache.tmp" "$cache" \
+          || rm -f "$cache.tmp" ) &!
     fi
-    # async refresh for next shell
-    ( curl -sf --max-time 4 \
-        "wttr.in/${city}?format=%l:+%c+%t+%C&lang=${lang}" \
-        > "$cache.tmp" 2>/dev/null \
-        && mv "$cache.tmp" "$cache" ) &!
   fi
 
-  local -a tips_zh=(
-    "z <dir> 跳到常用目錄"
-    "ctrl+r 搜歷史"
-    "bat <file> 取代 cat"
-    "tree -L 2 看目錄結構"
-    "gh pr view 看 PR"
-    "nvml 載入 nvm"
-  )
-  local -a tips_en=(
-    "z <dir> — jump to frecent dirs"
-    "ctrl+r — fuzzy history"
-    "bat <file> — better cat"
-    "tree -L 2 — quick tree"
-    "gh pr view — inspect PR"
-    "nvml — load nvm lazily"
-  )
-  local tip
-  if [[ "$lang" == "en" ]]; then
-    tip="${tips_en[$((RANDOM % ${#tips_en[@]} + 1))]}"
-  else
-    tip="${tips_zh[$((RANDOM % ${#tips_zh[@]} + 1))]}"
+  # Quote: user file wins, else tracked default.
+  local quote=""
+  local qfile=""
+  if [[ -s "$HOME/.config/dotfile/quotes.txt" ]]; then
+    qfile="$HOME/.config/dotfile/quotes.txt"
+  elif [[ -s "$HOME/.dotfiles/quotes.txt" ]]; then
+    qfile="$HOME/.dotfiles/quotes.txt"
+  fi
+  if [[ -n "$qfile" ]]; then
+    local -a qlines
+    qlines=("${(@f)$(awk '!/^[[:space:]]*#/ && NF' "$qfile")}")
+    (( ${#qlines} > 0 )) && quote="${qlines[$((RANDOM % ${#qlines} + 1))]}"
   fi
 
   local dim=$'\e[2m' pink=$'\e[38;5;218m' reset=$'\e[0m'
@@ -202,7 +200,7 @@ _greet() {
   for (( i = 0; i < cols; i++ )); do sep+="─"; done
 
   print
-  printf "  %s∩___∩%s     %s? %s%s\n"   "$pink" "$reset" "$dim" "$tip" "$reset"
+  printf "  %s∩___∩%s     %s%s%s\n"    "$pink" "$reset" "$dim" "$quote" "$reset"
   printf " %s( ・ω・)%s   %s, %s 👋\n"  "$pink" "$reset" "$hi" "$name"
   printf "  %sづ づ %s    %s\n"         "$pink" "$reset" "$date_str"
   printf "   %s¯¯¯%s      %s\n"         "$pink" "$reset" "${weather:-—}"
