@@ -42,6 +42,7 @@ BREW_PREFIX="/opt/homebrew"
 # --- PATH ---
 export PATH="$HOME/bin:/usr/local/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+[[ -d "$HOME/go/bin" ]] && export PATH="$HOME/go/bin:$PATH"
 
 # --- Plugins (brew installed) ---
 [[ -r "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && \
@@ -50,8 +51,10 @@ export PATH="$HOME/.local/bin:$PATH"
   source "$BREW_PREFIX/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
 
 # --- FZF keybindings & completion (Ctrl+R for history search) ---
-source "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
-source "$BREW_PREFIX/opt/fzf/shell/completion.zsh"
+[[ -r "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh" ]] && \
+  source "$BREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+[[ -r "$BREW_PREFIX/opt/fzf/shell/completion.zsh" ]] && \
+  source "$BREW_PREFIX/opt/fzf/shell/completion.zsh"
 
 # --- Aliases ---
 alias l='ls -lahG'
@@ -60,6 +63,7 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias vi='nvim'
 alias vim='nvim'
+alias cc='claude'
 
 # GCP quick switch
 function gpick() {
@@ -75,10 +79,7 @@ load_nvm() {
 alias nvml="load_nvm"
 
 # --- Starship Prompt ---
-eval "$(starship init zsh)"
-
-# --- Zoxide ---
-eval "$(zoxide init zsh)"
+command -v starship >/dev/null && eval "$(starship init zsh)"
 
 # --- Cloud SDK ---
 [[ -f '/opt/homebrew/share/google-cloud-sdk/path.zsh.inc' ]] && \
@@ -90,32 +91,25 @@ eval "$(zoxide init zsh)"
 export CLICOLOR=1
 export LSCOLORS=ExGxFxdaCxDaDahbadacec
 
-source "$BREW_PREFIX/opt/zinit/zinit.zsh"
+if [[ -r "$BREW_PREFIX/opt/zinit/zinit.zsh" ]]; then
+  source "$BREW_PREFIX/opt/zinit/zinit.zsh"
+  zinit snippet OMZP::git
+  zinit snippet OMZP::docker
+  zinit snippet OMZP::docker-compose
+  zinit snippet OMZP::brew
+  # zinit registers `zi` as an alias for itself — free it up so zoxide
+  # can use it for the interactive picker. Full name `zinit` still works.
+  unalias zi 2>/dev/null
+fi
 
-# Git aliases
-zinit snippet OMZP::git
-
-# Docker 補全 + aliases
-zinit snippet OMZP::docker
-zinit snippet OMZP::docker-compose
-
-# 常用工具
-zinit snippet OMZP::brew           # brew 補全
-
-# Added by Antigravity
-export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
-
-# pnpm
-export PNPM_HOME="$HOME/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
-
-[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
+# --- Zoxide ---
+# Init AFTER zinit + unalias above so zoxide's `zi` (interactive fzf picker)
+# is the one that runs.
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
 # --- Local overrides (not tracked) ---
+# Machine-specific integrations (pnpm / Antigravity / Kiro / etc.) belong in
+# ~/.zshrc.local, not here. install.sh migrates detected ones automatically.
 # ~/.zshrc.local is written by install.sh and holds per-machine vars
 # (GREET_NAME / GREET_CITY / GREET_LANG / secrets / tweaks).
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
@@ -172,10 +166,16 @@ _greet() {
       weather="$(cat "$cache")"
     else
       [[ -f "$cache" ]] && weather="$(cat "$cache")  ·  (更新中)"
-      # Async refresh — don't block the shell
-      ( "$HOME/.dotfiles/bin/weather" "$city" "$lang" > "$cache.tmp" 2>/dev/null \
-          && mv "$cache.tmp" "$cache" \
-          || rm -f "$cache.tmp" ) &!
+      # Async refresh — don't block the shell. PID-suffixed tmp avoids
+      # clobbering when two shells refresh concurrently.
+      (
+        local tmp="$cache.$$.tmp"
+        if "$HOME/.dotfiles/bin/weather" "$city" "$lang" >"$tmp" 2>/dev/null; then
+          mv "$tmp" "$cache"
+        else
+          rm -f "$tmp"
+        fi
+      ) &!
     fi
   fi
 
