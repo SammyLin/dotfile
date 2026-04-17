@@ -1,0 +1,79 @@
+# =========================================
+# Sammy — Minimal Pills Prompt
+# =========================================
+format = """\
+[╭╴](fg:frame)\
+$directory\
+( $git_branch$git_status)\
+$cmd_duration
+[╰─](fg:frame)$character\
+"""
+
+add_newline = true
+command_timeout = 500
+palette = "catppuccin"
+
+[palettes.catppuccin]
+frame = "#585b70"
+dir = "#cba6f7"
+git = "#a6e3a1"
+git_status = "#f9e2af"
+duration = "#f5c2e7"
+
+[character]
+success_symbol = "[](fg:frame)"
+error_symbol = "[](fg:red)"
+
+[directory]
+format = "[ $path]($style)[$read_only]($read_only_style)"
+style = "bold fg:dir"
+read_only_style = "fg:dir"
+read_only = " 󰌾"
+truncation_length = 3
+truncation_symbol = "…/"
+truncate_to_repo = false
+
+[git_branch]
+format = "[ $symbol$branch]($style)"
+style = "bold fg:git"
+symbol = " "
+
+[git_status]
+format = '( [$all_status$ahead_behind]($style))'
+style = "fg:git_status"
+stashed = "󰏗 "
+modified = "󰏫 "
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+conflicted = " "
+untracked = " "
+staged = "󰐕 "
+deleted = "󰍴 "
+
+[git_state]
+cherry_pick = "[ PICK](bold red)"
+rebase = "[ REBASE](bold yellow)"
+merge = "[ MERGE](bold purple)"
+
+[cmd_duration]
+format = " [ $duration]($style)"
+style = "fg:duration"
+min_time = 3000
+
+[nodejs]
+disabled = true
+[python]
+disabled = true
+[golang]
+disabled = true
+[docker_context]
+disabled = true
+[kubernetes]
+disabled = true
+[gcloud]
+disabled = true
+[terraform]
+disabled = true
+[package]
+disabled = true
