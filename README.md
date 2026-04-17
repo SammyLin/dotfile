@@ -6,7 +6,7 @@ now grown into a full setup with zinit + starship + brew bundle.
 ## Setup on a new machine
 
 ```sh
-git clone git@github.com:SammyLin/sammy-dotfile.git ~/.dotfiles
+git clone git@github.com:SammyLin/dotfile.git ~/.dotfiles
 cd ~/.dotfiles
 ./install.sh
 ```
