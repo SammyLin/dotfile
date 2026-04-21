@@ -176,6 +176,12 @@ refreshes async so the network never blocks the shell.
 2. `quotes.txt` in this repo — English fallback used when the personal
    file doesn't exist.
 
+**Dotfiles sync status** appears below the banner when `~/.dotfiles`
+has uncommitted changes, unpushed commits, or is behind its upstream
+— silent when clean. Working-tree diff and ahead/behind counts come
+from refs already on disk (fast, no network); `git fetch` runs once
+per day in the background so the next shell sees fresh upstream state.
+
 ## Local overrides
 
 `~/.zshrc.local` is sourced at the end of `zshrc`. Put machine-specific

@@ -151,13 +151,17 @@ _greet() {
     date_str="$(date +%Y/%m/%d) 週${wd[$(date +%u)]}"
   fi
 
+  # Shared cache scaffolding for any daily-cached feature in _greet
+  # (weather, dotfiles fetch, ...). `today` is a YYYYMMDD stamp compared
+  # against cache file mtimes to decide whether to refresh.
+  local cache_dir="$HOME/.cache/dotfile"
+  local today=$(date +%Y%m%d)
+  mkdir -p "$cache_dir"
+
   # Weather — cache once per day. Refresh async if cache is stale.
   local weather=""
   if [[ -n "$city" ]]; then
-    local cache_dir="$HOME/.cache/dotfile"
     local cache="$cache_dir/weather.${city// /_}.${lang}"
-    local today=$(date +%Y%m%d)
-    mkdir -p "$cache_dir"
 
     local cache_day=""
     [[ -f "$cache" ]] && cache_day=$(date -r "$(stat -f %m "$cache")" +%Y%m%d 2>/dev/null)
@@ -205,6 +209,55 @@ _greet() {
   printf "  %sづ づ %s    %s\n"         "$pink" "$reset" "$date_str"
   printf "   %s¯¯¯%s      %s\n"         "$pink" "$reset" "${weather:-—}"
   printf "%s%s%s\n"                     "$dim" "$sep" "$reset"
+
+  # Dotfiles sync status — shown only when ~/.dotfiles is not clean.
+  # - Working-tree diff + ahead/behind are computed synchronously from
+  #   refs already on disk (fast, no network).
+  # - `git fetch` runs once per day in the background (&!), marked via
+  #   ~/.cache/dotfile/dotfiles.fetched's mtime. Current shell shows
+  #   whatever the last fetch saw; today's fetch lands for the next one.
+  local DOTFILES_DIR="$HOME/.dotfiles"
+  if [[ -d "$DOTFILES_DIR/.git" ]]; then
+    local df_dirty df_ahead=0 df_behind=0
+    df_dirty=$(git -C "$DOTFILES_DIR" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+
+    local df_fetch_mark="$cache_dir/dotfiles.fetched"
+    local fetch_day=""
+    [[ -f "$df_fetch_mark" ]] && \
+      fetch_day=$(date -r "$(stat -f %m "$df_fetch_mark")" +%Y%m%d 2>/dev/null)
+    if [[ "$fetch_day" != "$today" ]]; then
+      ( git -C "$DOTFILES_DIR" fetch --quiet origin 2>/dev/null && \
+        touch "$df_fetch_mark" ) &!
+    fi
+
+    local upstream
+    upstream=$(git -C "$DOTFILES_DIR" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+    if [[ -n "$upstream" ]]; then
+      df_ahead=$(git -C "$DOTFILES_DIR" rev-list --count "$upstream..HEAD" 2>/dev/null)
+      df_behind=$(git -C "$DOTFILES_DIR" rev-list --count "HEAD..$upstream" 2>/dev/null)
+    fi
+
+    local -a parts
+    if [[ "$lang" == "en" ]]; then
+      (( df_dirty > 0 ))  && parts+=("$df_dirty uncommitted")
+      (( df_ahead > 0 ))  && parts+=("$df_ahead ahead")
+      (( df_behind > 0 )) && parts+=("$df_behind behind $upstream")
+    else
+      (( df_dirty > 0 ))  && parts+=("$df_dirty 個未 commit")
+      (( df_ahead > 0 ))  && parts+=("領先 $df_ahead 個")
+      (( df_behind > 0 )) && parts+=("落後 $upstream $df_behind 個")
+    fi
+
+    if (( ${#parts} > 0 )); then
+      local yellow=$'\e[38;5;221m'
+      local joined="${(j: · :)parts}"
+      if [[ "$lang" == "en" ]]; then
+        printf "%s⚠  dotfiles:%s %s\n" "$yellow" "$reset" "$joined"
+      else
+        printf "%s⚠  dotfiles：%s%s\n" "$yellow" "$reset" "$joined"
+      fi
+    fi
+  fi
 }
 _greet
 unset -f _greet

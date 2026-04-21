@@ -171,6 +171,12 @@ export GREET_LANG="zh"       # zh | en
    隨意建立——一行一句，`#` 開頭是註解。
 2. repo 裡的 `quotes.txt`——沒有個人檔案時使用的英文 fallback。
 
+**Dotfiles 同步狀態**：當 `~/.dotfiles` 有未 commit、未 push 或落後
+upstream 時，會在 banner 下另起一行提醒——乾淨時完全不顯示。工作目錄
+的 diff 跟 ahead/behind 都是用本機已有的 refs 直接算（不碰網路）；
+`git fetch` 一天在背景跑一次，讓下一次開 shell 看到最新的 upstream
+狀態。
+
 ## 本機覆寫
 
 `~/.zshrc.local` 在 `zshrc` 最後被 source 進來。本機專用 env、
