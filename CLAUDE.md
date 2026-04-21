@@ -33,8 +33,10 @@ since removed from HEAD but still in git history).
 | `Brewfile` | Declarative package list for `brew bundle` |
 | `install.sh` | Symlink + `brew bundle` + interactive greeting personalization + cache warm-up |
 | `bin/weather` | Helper: fetches wttr.in JSON, outputs single-line weather summary with min/max + rain% |
+| `ghostty-config` | Ghostty terminal config — symlinked to `~/.config/ghostty/config` by `install.sh` |
 | `quotes.txt` | English fallback quotes (used if `~/.config/dotfile/quotes.txt` missing) |
-| `README.md` | Human-facing usage |
+| `README.md` | Human-facing usage (English) |
+| `README.zh-TW.md` | Human-facing usage (Traditional Chinese); keep in sync with `README.md` |
 | `CLAUDE.md` | This file |
 
 Machine-local file (**not** in this repo, written by `install.sh`):

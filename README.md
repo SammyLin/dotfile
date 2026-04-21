@@ -39,12 +39,13 @@ Flags:
 | `starship.toml` | prompt config (Catppuccin, minimal-pills) |
 | `Brewfile` | all formulae / casks / taps |
 | `install.sh` | symlink + greeting prompt + brew bundle |
+| `ghostty-config` | Ghostty terminal config (font, theme, keybinds) |
 | `CLAUDE.md` | context for Claude Code when working in this repo |
 
 ## Ghostty (terminal)
 
-Recommended config lives at `~/.config/ghostty/config`. Reload in-app with
-`Cmd+Shift+,`.
+The tracked `ghostty-config` file is symlinked to `~/.config/ghostty/config`
+by `install.sh`. Reload in-app with `Cmd+Shift+,`.
 
 ```ini
 # Font

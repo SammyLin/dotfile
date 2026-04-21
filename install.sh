@@ -243,9 +243,10 @@ if (( RECONFIG )) && [[ -f "$LOCAL" ]]; then
 fi
 
 echo "==> symlinks"
-link "$DIR/zshrc"         "$HOME/.zshrc"
-link "$DIR/zshenv"        "$HOME/.zshenv"
-link "$DIR/starship.toml" "$HOME/.config/starship.toml"
+link "$DIR/zshrc"          "$HOME/.zshrc"
+link "$DIR/zshenv"         "$HOME/.zshenv"
+link "$DIR/starship.toml"  "$HOME/.config/starship.toml"
+link "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
 
 echo "==> machine integrations → $LOCAL"
 migrate_machine_integrations

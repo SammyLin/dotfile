@@ -38,12 +38,13 @@ Flags:
 | `starship.toml` | prompt 設定（Catppuccin、minimal-pills） |
 | `Brewfile` | 所有 formulae / casks / taps |
 | `install.sh` | symlink + greeting 個人化 + brew bundle |
+| `ghostty-config` | Ghostty 終端機設定（字型、主題、keybinds） |
 | `CLAUDE.md` | 給 Claude Code 在這個 repo 工作時用的 context |
 
 ## Ghostty（終端機）
 
-建議的設定檔放在 `~/.config/ghostty/config`。在 app 裡用 `Cmd+Shift+,`
-重新載入。
+Tracked 的 `ghostty-config` 會被 `install.sh` symlink 到
+`~/.config/ghostty/config`。在 app 裡用 `Cmd+Shift+,` 重新載入。
 
 ```ini
 # Font
