@@ -4,8 +4,8 @@ font-size = 14
 font-feature = +calt, +liga, +ss01
 adjust-cell-height = 10%
 
-# Theme — Catppuccin ships built-in; name is case- and space-sensitive
-theme = Catppuccin Mocha
+# Theme — name is case- and space-sensitive; `ghostty +list-themes` for the list
+theme = Zenbones Dark
 
 # Window
 window-padding-x = 12
