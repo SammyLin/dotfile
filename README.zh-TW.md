@@ -171,11 +171,12 @@ export GREET_LANG="zh"       # zh | en
    隨意建立——一行一句，`#` 開頭是註解。
 2. repo 裡的 `quotes.txt`——沒有個人檔案時使用的英文 fallback。
 
-**Dotfiles 同步狀態**：當 `~/.dotfiles` 有未 commit、未 push 或落後
-upstream 時，會在 banner 下另起一行提醒——乾淨時完全不顯示。工作目錄
-的 diff 跟 ahead/behind 都是用本機已有的 refs 直接算（不碰網路）；
+**Dotfiles 同步狀態**：每次開 shell 都會在 banner 下印一行。乾淨時
+綠色 `✓  dotfiles 已同步 · 上次 fetch HH:MM`，有問題時黃色
+`⚠  dotfiles：N 個未 commit · 領先 N 個 · 落後 ... N 個`。工作目錄的
+diff 跟 ahead/behind 都是用本機已有的 refs 直接算（不碰網路）；
 `git fetch` 一天在背景跑一次，讓下一次開 shell 看到最新的 upstream
-狀態。
+狀態，`上次 fetch` 時間戳會告訴你這份資訊有多新。
 
 ## 本機覆寫
 

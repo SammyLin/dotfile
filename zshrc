@@ -248,15 +248,40 @@ _greet() {
       (( df_behind > 0 )) && parts+=("落後 $upstream $df_behind 個")
     fi
 
-    if (( ${#parts} > 0 )); then
-      local yellow=$'\e[38;5;221m'
-      local joined="${(j: · :)parts}"
-      if [[ "$lang" == "en" ]]; then
-        printf "%s⚠  dotfiles:%s %s\n" "$yellow" "$reset" "$joined"
-      else
-        printf "%s⚠  dotfiles：%s%s\n" "$yellow" "$reset" "$joined"
+    # Format mtime of the fetch marker: HH:MM today, MM/DD HH:MM otherwise.
+    # Blank if no fetch has ever succeeded (first shell after clone).
+    local last_fetch=""
+    if [[ -f "$df_fetch_mark" ]]; then
+      local mtime mday
+      mtime=$(stat -f %m "$df_fetch_mark" 2>/dev/null)
+      if [[ -n "$mtime" ]]; then
+        mday=$(date -r "$mtime" +%Y%m%d 2>/dev/null)
+        if [[ "$mday" == "$today" ]]; then
+          last_fetch=$(date -r "$mtime" "+%H:%M" 2>/dev/null)
+        else
+          last_fetch=$(date -r "$mtime" "+%m/%d %H:%M" 2>/dev/null)
+        fi
       fi
     fi
+
+    local color line
+    if (( ${#parts} > 0 )); then
+      color=$'\e[38;5;221m'  # yellow — something needs attention
+      local joined="${(j: · :)parts}"
+      if [[ "$lang" == "en" ]]; then
+        line="⚠  dotfiles: $joined"
+      else
+        line="⚠  dotfiles：$joined"
+      fi
+    else
+      color=$'\e[38;5;114m'  # green — in sync
+      if [[ "$lang" == "en" ]]; then
+        line="✓  dotfiles in sync${last_fetch:+ · last fetch $last_fetch}"
+      else
+        line="✓  dotfiles 已同步${last_fetch:+ · 上次 fetch $last_fetch}"
+      fi
+    fi
+    printf "%s%s%s\n" "$color" "$line" "$reset"
   fi
 }
 _greet
