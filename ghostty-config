@@ -1,25 +1,28 @@
 # Font
 font-family = "JetBrainsMono Nerd Font"
 font-size = 14
+font-feature = +calt, +liga, +ss01
+adjust-cell-height = 10%
 
 # Theme — Catppuccin ships built-in; name is case- and space-sensitive
 theme = Catppuccin Mocha
 
 # Window
-window-padding-x = 14
-window-padding-y = 12
+window-padding-x = 12
+window-padding-y = 10
 window-padding-balance = true
+window-save-state = always
 background-opacity = 0.96
-background-blur = true
+background-blur-radius = 20
 
-# Cursor — steady block (also needs the shell-integration override below)
-cursor-style = block
-cursor-style-blink = false
+# Cursor
+cursor-style = bar
+cursor-style-blink = true
 shell-integration = detect
-shell-integration-features = no-cursor,sudo,title
+shell-integration-features = cursor,sudo,title
 
 # UX
-scrollback-limit = 10000000
+scrollback-limit = 100000
 mouse-hide-while-typing = true
 copy-on-select = clipboard
 confirm-close-surface = false
@@ -27,12 +30,13 @@ clipboard-trim-trailing-spaces = true
 
 # macOS
 macos-titlebar-style = tabs
-macos-option-as-alt = left
+macos-option-as-alt = true
+quit-after-last-window-closed = true
 quick-terminal-position = top
 quick-terminal-autohide = true
 
 # Quick terminal (drop-down, global hotkey)
-keybind = global:cmd+grave_accent=toggle_quick_terminal
+keybind = global:cmd+opt+grave_accent=toggle_quick_terminal
 
 # Tabs
 keybind = cmd+t=new_tab
@@ -47,6 +51,6 @@ keybind = cmd+alt+h=goto_split:left
 keybind = cmd+alt+j=goto_split:down
 keybind = cmd+alt+k=goto_split:up
 keybind = cmd+alt+l=goto_split:right
-keybind = cmd+enter=toggle_split_zoom
 
+keybind = cmd+enter=toggle_split_zoom
 keybind = cmd+shift+r=reload_config
