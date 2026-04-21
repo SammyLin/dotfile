@@ -12,14 +12,20 @@ lang="${2:-zh}"
 command -v curl >/dev/null 2>&1 || { echo "curl not found" >&2; exit 1; }
 command -v jq   >/dev/null 2>&1 || { echo "jq not found"   >&2; exit 1; }
 
-json=$(curl -sf --max-time 5 "https://wttr.in/${city}?format=j1") || exit 1
+# URL-encode so multi-word cities (e.g. "New York") reach wttr.in intact.
+city_enc=$(printf '%s' "$city" | jq -sRr @uri)
 
-temp=$(jq -r '.current_condition[0].temp_C'                 <<<"$json")
-mint=$(jq -r '.weather[0].mintempC'                          <<<"$json")
-maxt=$(jq -r '.weather[0].maxtempC'                          <<<"$json")
-rain=$(jq -r '[.weather[0].hourly[].chanceofrain | tonumber] | max' <<<"$json")
-code=$(jq -r '.current_condition[0].weatherCode'             <<<"$json")
-desc_en=$(jq -r '.current_condition[0].weatherDesc[0].value' <<<"$json")
+json=$(curl -sf --max-time 5 "https://wttr.in/${city_enc}?format=j1") || exit 1
+
+IFS=$'\t' read -r temp mint maxt rain code desc_en <<<"$(jq -r '
+  [
+    .current_condition[0].temp_C,
+    .weather[0].mintempC,
+    .weather[0].maxtempC,
+    ([.weather[0].hourly[].chanceofrain | tonumber] | max),
+    .current_condition[0].weatherCode,
+    .current_condition[0].weatherDesc[0].value
+  ] | @tsv' <<<"$json")"
 
 # Emoji for the current condition (wttr.in weatherCode → emoji).
 case "$code" in
