@@ -286,3 +286,5 @@ _greet() {
 }
 _greet
 unset -f _greet
+# CF CLI completions
+[[ -f "$HOME/.config/cf/completions/_cf.zsh" ]] && source "$HOME/.config/cf/completions/_cf.zsh"
