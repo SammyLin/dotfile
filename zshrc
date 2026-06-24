@@ -64,6 +64,7 @@ alias ...='cd ../..'
 alias vi='nvim'
 alias vim='nvim'
 alias cc='claude'
+alias oc='ocx opencode'
 
 # GCP quick switch
 function gpick() {

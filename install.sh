@@ -246,6 +246,7 @@ echo "==> symlinks"
 link "$DIR/zshrc"          "$HOME/.zshrc"
 link "$DIR/zshenv"         "$HOME/.zshenv"
 link "$DIR/starship.toml"  "$HOME/.config/starship.toml"
+link "$DIR/tmux.conf"      "$HOME/.tmux.conf"
 link "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
 
 echo "==> machine integrations → $LOCAL"
