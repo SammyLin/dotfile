@@ -76,29 +76,6 @@ function gpick() {
   [ -n "$cfg" ] && gcloud config configurations activate "$cfg"
 }
 
-# Render #rrggbb / #rgb hex codes as truecolor swatches.
-# Reads args, or stdin when none: `hexcolor '#FF6B35'`, `cat theme.css | hexcolor`
-hexcolor() {
-  local _hc_line
-  _hc_render() {
-    local rest="$1" out="" hex r g b
-    while [[ "$rest" =~ '#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})([^0-9a-fA-F]|$)' ]]; do
-      hex="${match[1]}"
-      [[ ${#hex} -eq 3 ]] && hex="${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}"
-      r=$((16#${hex[1,2]})) g=$((16#${hex[3,4]})) b=$((16#${hex[5,6]}))
-      out+="${rest[1,MBEGIN-1]}$(printf '\e[48;2;%d;%d;%dm  \e[0m' $r $g $b)#${match[1]}"
-      rest="${rest[MBEGIN+${#match[1]}+1,-1]}"
-    done
-    printf '%s%s\n' "$out" "$rest"
-  }
-  if (( $# )); then
-    for _hc_line in "$@"; do _hc_render "$_hc_line"; done
-  else
-    while IFS= read -r _hc_line; do _hc_render "$_hc_line"; done
-  fi
-  unfunction _hc_render
-}
-
 # --- Lazy NVM ---
 load_nvm() {
   export NVM_DIR="$HOME/.nvm"
