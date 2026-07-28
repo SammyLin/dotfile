@@ -19,8 +19,14 @@ width = "80%"
 height = "80%"
 
 [theme]
-# follow Ghostty's light/dark appearance
-auto_switch = true
+# pinned dark: auto_switch flipped to the latte/light variant with the system
+# appearance, which lit up the tab bar and the selected sidebar row while the
+# panes stayed on Ghostty's dark background
+auto_switch = false
+# rose-pine: near-black chrome with a bright foreground, so nothing goes white
+# but the sidebar text and selected row stay legible. Its own accents are muted
+# enough that no palette override is needed.
+name = "rose-pine"
 
 [ui]
 agent_panel_sort = "priority"
