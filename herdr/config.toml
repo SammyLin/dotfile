@@ -10,6 +10,30 @@ switch_workspace = "prefix+shift+1..9"
 previous_workspace = "prefix+up"
 next_workspace = "prefix+down"
 
+# hand prefix+shift+g to the worktrunk plugin below: its picker also lists
+# existing worktrees and runs worktrunk's create/remove hooks, which the native
+# action does not
+new_worktree = ""
+
+# worktrunk plugin (github:devashish2203/herdr-worktrunk) -- needs the `wt` CLI
+[[keys.command]]
+key = "prefix+shift+g"
+type = "plugin_action"
+command = "worktrunk.open"
+description = "Worktree: switch / create from default branch"
+
+[[keys.command]]
+key = "prefix+alt+g"
+type = "plugin_action"
+command = "worktrunk.open-current"
+description = "Worktree: switch / create from current branch"
+
+[[keys.command]]
+key = "prefix+alt+x"
+type = "plugin_action"
+command = "worktrunk.remove"
+description = "Worktree: remove"
+
 # cmd+shift+/ opens the hand-written cheatsheet in a popup pane
 [[keys.command]]
 key = "prefix+shift+k"

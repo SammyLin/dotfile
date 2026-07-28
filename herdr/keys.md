@@ -46,6 +46,22 @@ sidebar, so red is always the first thing on screen.
 | — | jump palette (any space/tab/pane) | `ctrl+b g` |
 | — | close workspace | `ctrl+b D` |
 
+## Worktrees
+
+The `worktrunk` plugin, not herdr's built-in worktree action — the picker also
+lists existing worktrees and runs worktrunk's create/remove hooks, so `ctrl+b G`
+replaces the native `new_worktree` on the same key.
+
+| Key | Does | Raw |
+|---|---|---|
+| — | picker: switch, or create off the default branch | `ctrl+b G` |
+| — | same, but new branches fork from the current one | `ctrl+b alt+g` |
+| — | pick a worktree to remove | `ctrl+b alt+x` |
+
+Needs the `wt` CLI (`brew install worktrunk`). The plugin lives outside this
+repo — a fresh machine needs
+`herdr plugin install devashish2203/herdr-worktrunk --yes`.
+
 ## Panes
 
 | Key | Does | Raw |

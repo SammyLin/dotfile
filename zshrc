@@ -112,6 +112,11 @@ fi
 # is the one that runs.
 command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
+# --- worktrunk ---
+# Wraps `wt` in a shell function so `wt switch` can cd the current shell into
+# the worktree -- the bare binary can only print the path.
+command -v wt >/dev/null && eval "$(wt config shell init zsh)"
+
 # --- Local overrides (not tracked) ---
 # Machine-specific integrations (pnpm / Antigravity / Kiro / etc.) belong in
 # ~/.zshrc.local, not here. install.sh migrates detected ones automatically.
