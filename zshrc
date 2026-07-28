@@ -288,6 +288,38 @@ _greet() {
     fi
     printf "%s%s%s\n" "$color" "$line" "$reset"
   fi
+
+  # Missing-tool check — the CLIs this repo's configs actually depend on.
+  # Runs at most once a day (same mtime-stamp trick as the weather and
+  # fetch caches) so a normal shell start pays nothing. Silent when every
+  # tool is present; a second always-on ✓ line would just pad the banner.
+  local tools_cache="$cache_dir/tools.missing"
+  local tools_day=""
+  [[ -f "$tools_cache" ]] && \
+    tools_day=$(date -r "$(stat -f %m "$tools_cache")" +%Y%m%d 2>/dev/null)
+
+  if [[ "$tools_day" != "$today" ]]; then
+    local -a missing
+    local t
+    for t in herdr bat starship zoxide fzf; do
+      command -v "$t" >/dev/null 2>&1 || missing+=("$t")
+    done
+    [[ -d /Applications/Ghostty.app ]] || missing+=("ghostty")
+    print -r -- "${(j: :)missing}" >"$tools_cache"
+  fi
+
+  local missing_line
+  missing_line=$(<"$tools_cache")
+  if [[ -n "$missing_line" ]]; then
+    local warn=$'\e[38;5;221m'
+    if [[ "$lang" == "en" ]]; then
+      printf "%s⚠  not installed: %s · brew bundle --file ~/.dotfiles/Brewfile%s\n" \
+        "$warn" "$missing_line" "$reset"
+    else
+      printf "%s⚠  沒裝：%s · brew bundle --file ~/.dotfiles/Brewfile%s\n" \
+        "$warn" "$missing_line" "$reset"
+    fi
+  fi
 }
 _greet
 unset -f _greet

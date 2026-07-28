@@ -248,6 +248,10 @@ link "$DIR/zshenv"         "$HOME/.zshenv"
 link "$DIR/starship.toml"  "$HOME/.config/starship.toml"
 link "$DIR/tmux.conf"      "$HOME/.tmux.conf"
 link "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
+# ghostty-herdr.conf is pulled in by ghostty-config's own config-file line,
+# so it needs no symlink of its own.
+link "$DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+link "$DIR/herdr/sounds"      "$HOME/.config/herdr/sounds"
 
 echo "==> machine integrations → $LOCAL"
 migrate_machine_integrations

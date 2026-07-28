@@ -1,0 +1,58 @@
+[terminal]
+# new panes inherit the source pane's cwd
+new_cwd = "follow"
+
+[keys]
+# cmd+shift+1..9 in ghostty-herdr.conf routes here
+switch_workspace = "prefix+shift+1..9"
+
+# unset by default -- without these there is no prev/next space at all
+previous_workspace = "prefix+up"
+next_workspace = "prefix+down"
+
+# cmd+shift+/ opens the hand-written cheatsheet in a popup pane
+[[keys.command]]
+key = "prefix+shift+k"
+type = "popup"
+command = "bat --style=plain --paging=always ~/.dotfiles/herdr/keys.md"
+width = "80%"
+height = "80%"
+
+[theme]
+# follow Ghostty's light/dark appearance
+auto_switch = true
+
+[ui]
+agent_panel_sort = "priority"
+
+# spell the state out next to the dot -- the glyph alone is hard to read at a
+# glance, and the icon characters themselves are not configurable
+show_agent_labels_on_pane_borders = true
+
+[ui.sidebar.agents]
+rows = [["state_icon", "state_text", "workspace", "tab"], ["agent", "terminal_title_stripped"]]
+
+[ui.sidebar.spaces]
+rows = [["state_icon", "state_text", "workspace"], ["branch", "git_status"]]
+
+[ui.sound]
+enabled = true
+# one sound for every state change (ElevenLabs UI click, from ~/Downloads).
+# no per-meaning split -- the sidebar dot + state_text carries that.
+path = "sounds/notification.mp3"
+
+[ui.toast]
+# hand notifications to Ghostty so they become real macOS notifications,
+# and still arrive when attached over SSH
+delivery = "terminal"
+
+[session]
+# put agent panes back into their own conversations after a server restart
+resume_agents_on_restore = true
+
+[experimental]
+# prefix keys keep working while a CJK IME is active
+switch_ascii_input_source_in_prefix = true
+# keep the IME candidate window tracking the cursor inside agent TUIs
+reveal_hidden_cursor_for_cjk_ime = true
+cjk_ime_agents = ["claude", "codex", "gemini"]
