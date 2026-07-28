@@ -330,3 +330,6 @@ export PATH="$PATH:$HOME/.maestro/bin"
 
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
+
+# sentry
+fpath=("/Users/sammy/.local/share/zsh/site-functions" $fpath)
