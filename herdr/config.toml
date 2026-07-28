@@ -1,3 +1,4 @@
+onboarding = false
 [terminal]
 # new panes inherit the source pane's cwd
 new_cwd = "follow"
@@ -47,10 +48,10 @@ height = "80%"
 # appearance, which lit up the tab bar and the selected sidebar row while the
 # panes stayed on Ghostty's dark background
 auto_switch = false
-# rose-pine: near-black chrome with a bright foreground, so nothing goes white
-# but the sidebar text and selected row stay legible. Its own accents are muted
+# nord: near-black chrome with a bright foreground, so nothing goes white but
+# the sidebar text and selected row stay legible. Its own accents are muted
 # enough that no palette override is needed.
-name = "rose-pine"
+name = "nord"
 
 [ui]
 agent_panel_sort = "priority"
@@ -86,3 +87,4 @@ switch_ascii_input_source_in_prefix = true
 # keep the IME candidate window tracking the cursor inside agent TUIs
 reveal_hidden_cursor_for_cjk_ime = true
 cjk_ime_agents = ["claude", "codex", "gemini"]
+pane_history = true
