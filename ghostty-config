@@ -56,4 +56,4 @@ keybind = cmd+enter=toggle_split_zoom
 keybind = cmd+shift+r=reload_config
 
 # herdr key routing (see ghostty-herdr.conf; comment out to restore native tabs/splits)
-config-file = /Users/sammy/.dotfiles/ghostty-herdr.conf
+config-file = ~/.dotfiles/ghostty-herdr.conf
