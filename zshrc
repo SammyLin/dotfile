@@ -337,4 +337,4 @@ export PATH="$PATH:$HOME/.maestro/bin"
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
 
 # sentry
-fpath=("/Users/sammy/.local/share/zsh/site-functions" $fpath)
+fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
