@@ -120,7 +120,15 @@ Same muscle memory, different app. Orca's defaults are remapped in
 | cmd+, / cmd+b | settings / sidebar | already the defaults |
 
 Displaced by the above: Go to File is on cmd+shift+p, reopen closed tab on
-cmd+alt+t, worktree history on cmd+shift+← / →.
+cmd+alt+t, new agent tab on cmd+shift+a, worktree history on cmd+shift+← / →.
+
+Displacement is a chain — every default a custom chord evicts has to be given a
+new home in the same file, or Orca drops the *whole* override. It rejects any
+override that collides with a still-default binding, then re-runs the check, so
+one unresolved collision cascades: `tab.reopenClosed` on cmd+alt+t hit the
+`tab.newAgent` default, got dropped, fell back to its own cmd+shift+t default,
+and took `tab.rename` down with it ("Conflicting custom shortcuts were
+ignored"). Moving `tab.newAgent` off cmd+alt+t fixed both.
 
 No equivalent: herdr's directional `cmd+alt+h/j/k/l` pane focus — Orca only
 cycles panes (`cmd+[` / `cmd+]`).

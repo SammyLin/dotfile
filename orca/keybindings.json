@@ -4,6 +4,7 @@
     "tab.close": ["Mod+Shift+W"],
     "tab.rename": ["Mod+Shift+T"],
     "tab.reopenClosed": ["Mod+Alt+T"],
+    "tab.newAgent": ["Mod+Shift+A"],
     "tab.previousSameType": ["Mod+Alt+ArrowLeft"],
     "tab.nextSameType": ["Mod+Alt+ArrowRight"],
     "tab.selectByIndex": ["Mod+1"],
