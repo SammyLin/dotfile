@@ -1,7 +1,4 @@
 
-# Kiro CLI pre block. Keep at the top of this file.
-[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh"
-
 # --- Core Env ---
 export EDITOR=nvim
 export LANG=en_US.UTF-8
@@ -38,10 +35,43 @@ bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 
 # --- Homebrew ---
+# Inlined `brew shellenv` output: shelling out to brew cost ~120ms per shell,
+# and what it prints only changes if Homebrew itself moves. Re-derive with
+# `brew shellenv` if that ever happens.
 if [[ -x "/opt/homebrew/bin/brew" ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+  export HOMEBREW_PREFIX="/opt/homebrew"
+  export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+  export HOMEBREW_REPOSITORY="/opt/homebrew"
+  export INFOPATH="/opt/homebrew/share/info${INFOPATH:+:$INFOPATH}"
+  typeset -U path fpath
+  path=(/opt/homebrew/bin /opt/homebrew/sbin $path)
+  fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
 fi
 BREW_PREFIX="/opt/homebrew"
+
+# --- Cached tool init ---
+# `foo init zsh` prints the same script until the binary changes, so cache it
+# and re-run the generator only when the binary is newer than the cache.
+_cached_init() {
+  local name="$1"; shift
+  local bin="${commands[$1]}"
+  [[ -n "$bin" ]] || return 0
+
+  local cache="$HOME/.cache/dotfile/init.$name.zsh"
+  if [[ ! -s "$cache" || "$bin" -nt "$cache" ]]; then
+    mkdir -p "${cache:h}"
+    local tmp="$cache.$$.tmp"
+    if "$@" >"$tmp" 2>/dev/null && [[ -s "$tmp" ]]; then
+      mv "$tmp" "$cache"
+    else
+      # Generator failed — fall back to the live eval, cache nothing.
+      rm -f "$tmp"
+      eval "$("$@")" 2>/dev/null
+      return
+    fi
+  fi
+  source "$cache"
+}
 
 # --- PATH ---
 export PATH="$HOME/bin:/usr/local/bin:$PATH"
@@ -84,7 +114,7 @@ load_nvm() {
 alias nvml="load_nvm"
 
 # --- Starship Prompt ---
-command -v starship >/dev/null && eval "$(starship init zsh)"
+_cached_init starship starship init zsh
 
 # --- Cloud SDK ---
 [[ -f '/opt/homebrew/share/google-cloud-sdk/path.zsh.inc' ]] && \
@@ -110,12 +140,12 @@ fi
 # --- Zoxide ---
 # Init AFTER zinit + unalias above so zoxide's `zi` (interactive fzf picker)
 # is the one that runs.
-command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+_cached_init zoxide zoxide init zsh
 
 # --- worktrunk ---
 # Wraps `wt` in a shell function so `wt switch` can cd the current shell into
 # the worktree -- the bare binary can only print the path.
-command -v wt >/dev/null && eval "$(wt config shell init zsh)"
+_cached_init worktrunk wt config shell init zsh
 
 # --- Local overrides (not tracked) ---
 # Machine-specific integrations (pnpm / Antigravity / Kiro / etc.) belong in
@@ -243,8 +273,13 @@ _greet() {
     local upstream
     upstream=$(git -C "$DOTFILES_DIR" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
     if [[ -n "$upstream" ]]; then
-      df_ahead=$(git -C "$DOTFILES_DIR" rev-list --count "$upstream..HEAD" 2>/dev/null)
-      df_behind=$(git -C "$DOTFILES_DIR" rev-list --count "HEAD..$upstream" 2>/dev/null)
+      # One rev-list, not two: --left-right --count prints "behind<TAB>ahead".
+      local counts
+      counts=$(git -C "$DOTFILES_DIR" rev-list --left-right --count \
+        "$upstream...HEAD" 2>/dev/null)
+      df_behind=${counts%%[[:space:]]*}
+      df_ahead=${counts##*[[:space:]]}
+      : "${df_behind:=0}" "${df_ahead:=0}"
     fi
 
     local -a parts
@@ -332,9 +367,6 @@ unset -f _greet
 [[ -f "$HOME/.config/cf/completions/_cf.zsh" ]] && source "$HOME/.config/cf/completions/_cf.zsh"
 
 export PATH="$PATH:$HOME/.maestro/bin"
-
-# Kiro CLI post block. Keep at the bottom of this file.
-[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
 
 # sentry
 fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
