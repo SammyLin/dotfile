@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "keybindings": {
+    "tab.close": ["Mod+Shift+W"],
+    "tab.rename": ["Mod+Shift+T"],
+    "tab.reopenClosed": ["Mod+Alt+T"],
+    "tab.previousSameType": ["Mod+Alt+ArrowLeft"],
+    "tab.nextSameType": ["Mod+Alt+ArrowRight"],
+    "tab.selectByIndex": ["Mod+1"],
+
+    "worktree.palette": ["Mod+P"],
+    "worktree.quickOpen": ["Mod+Shift+P"],
+    "worktree.navigateUp": ["Mod+Alt+ArrowUp"],
+    "worktree.navigateDown": ["Mod+Alt+ArrowDown"],
+    "worktree.history.back": ["Mod+Shift+ArrowLeft"],
+    "worktree.history.forward": ["Mod+Shift+ArrowRight"],
+    "workspace.create": ["Mod+N"],
+    "workspace.rename": ["Mod+Shift+N"],
+    "workspace.selectByIndex": ["Mod+Shift+1"],
+
+    "terminal.splitRight": ["Mod+D"],
+    "terminal.splitDown": ["Mod+Shift+D"],
+    "terminal.expandPane": ["Mod+Enter"]
+  },
+  "platforms": {
+    "darwin": {},
+    "linux": {},
+    "win32": {}
+  }
+}

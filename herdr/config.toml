@@ -54,7 +54,7 @@ auto_switch = false
 name = "nord"
 
 [ui]
-agent_panel_sort = "priority"
+agent_panel_sort = "spaces"
 
 # spell the state out next to the dot -- the glyph alone is hard to read at a
 # glance, and the icon characters themselves are not configurable

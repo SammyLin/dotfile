@@ -98,6 +98,42 @@ cmd+t/w/d belong to herdr now. Ghostty's own are:
 | cmd+alt+` | quick terminal (drop-down) |
 | cmd+shift+, | reload Ghostty config |
 
+## Orca
+
+Same muscle memory, different app. Orca's defaults are remapped in
+`~/.dotfiles/orca/keybindings.json` so the chords below match herdr's.
+
+| Key | herdr | Orca action |
+|---|---|---|
+| cmd+t | new tab | `tab.newTerminal` (already the default) |
+| cmd+shift+w | close tab | `tab.close` |
+| cmd+shift+t | rename tab | `tab.rename` |
+| cmd+alt+← / → | previous / next tab | `tab.previousSameType` / `nextSameType` |
+| cmd+1..9 | jump to tab N | `tab.selectByIndex` |
+| cmd+n / cmd+shift+n | new / rename workspace | `workspace.create` / `workspace.rename` |
+| cmd+p | workspace picker | `worktree.palette` |
+| cmd+alt+↑ / ↓ | previous / next workspace | `worktree.navigateUp` / `navigateDown` |
+| cmd+shift+1..9 | jump to workspace N | `workspace.selectByIndex` |
+| cmd+d / cmd+shift+d | split vertical / horizontal | `terminal.splitRight` / `splitDown` |
+| cmd+w | close pane | `terminal.closePane` (already the default) |
+| cmd+enter | zoom pane | `terminal.expandPane` |
+| cmd+, / cmd+b | settings / sidebar | already the defaults |
+
+Displaced by the above: Go to File is on cmd+shift+p, reopen closed tab on
+cmd+alt+t, worktree history on cmd+shift+← / →.
+
+No equivalent: herdr's directional `cmd+alt+h/j/k/l` pane focus — Orca only
+cycles panes (`cmd+[` / `cmd+]`).
+
+Orca reads the file at startup only: Settings → Keyboard Shortcuts → the `⋯`
+menu next to the file path → **Reload from Disk**. That pane also holds
+**Shortcuts in Terminal** (Orca first / Terminal first) — running herdr inside
+an Orca terminal pane needs *Terminal first*, otherwise Orca swallows the cmd
+chords before herdr sees them.
+
+Every action id lives in `Orca.app/Contents/Resources/app.asar`
+(`out/shared/keybindings.js`); the 1–9 ranges take one representative chord.
+
 ## CLI
 
 ```
@@ -114,3 +150,4 @@ ghostty +list-keybinds       every Ghostty binding, after overrides
 - `~/.dotfiles/ghostty-herdr.conf` — the cmd+* → `\x02*` routing
 - `~/.dotfiles/ghostty-config` — comment out its last `config-file` line to
   hand cmd+t/w/d back to Ghostty
+- `~/.dotfiles/orca/keybindings.json` — symlinked to `~/.orca/keybindings.json`

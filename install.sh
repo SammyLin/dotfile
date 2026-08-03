@@ -219,6 +219,24 @@ install_cargo_tools() {
   done
 }
 
+# herdr keeps its plugin registry in ~/.config/herdr/plugins, outside this repo,
+# so a fresh machine has the keybindings from config.toml pointing at plugins
+# that aren't there yet.
+install_herdr_plugins() {
+  command -v herdr >/dev/null 2>&1 || { echo "  skip  herdr not installed"; return; }
+
+  local installed
+  installed="$(herdr plugin list 2>/dev/null || true)"
+
+  if [[ "$installed" == *"worktrunk"* ]]; then
+    echo "  ok    worktrunk"
+  else
+    echo "  herdr plugin install worktrunk"
+    herdr plugin install devashish2203/herdr-worktrunk --yes >/dev/null 2>&1 ||
+      echo "  warn  failed: worktrunk"
+  fi
+}
+
 NO_BREW=0
 RECONFIG=0
 for arg in "$@"; do
@@ -252,6 +270,11 @@ link "$DIR/ghostty-config" "$HOME/.config/ghostty/config"
 # so it needs no symlink of its own.
 link "$DIR/herdr/config.toml" "$HOME/.config/herdr/config.toml"
 link "$DIR/herdr/sounds"      "$HOME/.config/herdr/sounds"
+# Orca reads this once at startup -- after changing it, Settings → Keyboard
+# Shortcuts → Reload from Disk, or restart the app.
+link "$DIR/orca/keybindings.json" "$HOME/.orca/keybindings.json"
+
+install_herdr_plugins
 
 echo "==> machine integrations → $LOCAL"
 migrate_machine_integrations
