@@ -76,6 +76,7 @@ _cached_init() {
 # --- PATH ---
 export PATH="$HOME/bin:/usr/local/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.dotfiles/bin:$PATH"
 [[ -d "$HOME/go/bin" ]] && export PATH="$HOME/go/bin:$PATH"
 
 # --- Plugins (brew installed) ---
@@ -100,8 +101,6 @@ alias vim='nvim'
 alias cc='claude'
 alias oc='ocx opencode'
 alias dot='cd "$HOME/.dotfiles"'
-# Pull latest dotfiles, relink, reload. `dotup --no-brew` skips brew bundle.
-dotup() { git -C "$HOME/.dotfiles" pull --ff-only && "$HOME/.dotfiles/install.sh" "$@" && exec zsh }
 
 # GCP quick switch
 function gpick() {

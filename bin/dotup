@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# dotup [install.sh flags...]
+# Pull the latest dotfiles and re-run install.sh (relink + brew bundle).
+#   dotup             full update
+#   dotup --no-brew   relink only, skip brew bundle
+# Reloading the shell is left to the caller -- a child process cannot
+# replace its parent's shell.
+set -euo pipefail
+
+DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
+
+git -C "$DIR" pull --ff-only
+"$DIR/install.sh" "$@"
+
+echo
+echo "run 'exec zsh' to reload this shell"
