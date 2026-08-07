@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# ip
+# Prints every local IPv4 address (per interface) plus the public IP.
+# macOS ships no `ip(8)`, so this name is free.
+set -uo pipefail
+
+# Local: interface name carries over from the last header line ifconfig printed.
+ifconfig | awk '
+  /^[a-z]/            { iface = substr($1, 1, length($1) - 1) }
+  /^\tinet / && $2 != "127.0.0.1" { printf "  %-8s %s\n", iface, $2 }
+'
+
+# Public: asked per family, since a v6-preferring network hides the v4 address.
+# ifconfig.me can be down or blocked -- say so instead of printing blank.
+for family in 4 6; do
+  addr=$(curl "-$family" -fsS --max-time 3 https://ifconfig.me 2>/dev/null) || addr=""
+  printf "  %-8s %s\n" "pub-v$family" "${addr:-unavailable}"
+done
