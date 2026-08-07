@@ -99,6 +99,9 @@ alias vi='nvim'
 alias vim='nvim'
 alias cc='claude'
 alias oc='ocx opencode'
+alias dot='cd "$HOME/.dotfiles"'
+# Pull latest dotfiles, relink, reload. `dotup --no-brew` skips brew bundle.
+dotup() { git -C "$HOME/.dotfiles" pull --ff-only && "$HOME/.dotfiles/install.sh" "$@" && exec zsh }
 
 # GCP quick switch
 function gpick() {
@@ -370,3 +373,8 @@ export PATH="$PATH:$HOME/.maestro/bin"
 
 # sentry
 fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
+
+# Added by Spectra
+if [[ -z ${path[(r)$HOME/.local/bin]} ]]; then
+  path=("$HOME/.local/bin" $path)
+fi

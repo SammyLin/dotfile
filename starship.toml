@@ -3,6 +3,7 @@
 # =========================================
 format = """\
 [╭╴](fg:frame)\
+$hostname\
 $directory\
 ( $git_branch$git_status)\
 $cmd_duration
@@ -15,6 +16,7 @@ palette = "catppuccin"
 
 [palettes.catppuccin]
 frame = "#585b70"
+host = "#89b4fa"
 dir = "#cba6f7"
 git = "#a6e3a1"
 git_status = "#f9e2af"
@@ -23,6 +25,14 @@ duration = "#f5c2e7"
 [character]
 success_symbol = "[](fg:frame)"
 error_symbol = "[](fg:red)"
+
+[hostname]
+ssh_only = false
+format = "[ $ssh_symbol$hostname]($style)"
+style = "bold fg:host"
+ssh_symbol = "󰢹 "
+# 沒列到的機器就直接顯示原始 hostname
+aliases = { "SammydeMacBook-Pro-9" = "MY" }
 
 [directory]
 format = "[ $path]($style)[$read_only]($read_only_style)"
