@@ -1,18 +1,61 @@
 #!/usr/bin/env bash
 # ip
-# Prints every local IPv4 address (per interface) plus the public IP.
+# Prints every local IPv4 address grouped by what it actually is --
+# LAN, Tailscale, other VPN, VM bridge -- plus the public address.
 # macOS ships no `ip(8)`, so this name is free.
+# Colors follow the Catppuccin palette used by starship.toml.
 set -uo pipefail
 
-# Local: interface name carries over from the last header line ifconfig printed.
-ifconfig | awk '
-  /^[a-z]/            { iface = substr($1, 1, length($1) - 1) }
-  /^\tinet / && $2 != "127.0.0.1" { printf "  %-8s %s\n", iface, $2 }
+if [[ -t 1 && -z ${NO_COLOR:-} ]]; then
+  C_LAN=$'\033[38;2;166;227;161m'    # green
+  C_TS=$'\033[38;2;203;166;247m'     # mauve
+  C_VPN=$'\033[38;2;137;180;250m'    # blue
+  C_VM=$'\033[38;2;108;112;134m'     # overlay/dim
+  C_PUB=$'\033[1;38;2;250;179;135m'  # bold peach
+  C_DIM=$'\033[38;2;88;91;112m'
+  C_OFF=$'\033[0m'
+else
+  C_LAN= C_TS= C_VPN= C_VM= C_PUB= C_DIM= C_OFF=
+fi
+
+# One awk pass over both inputs: the hardware-port table names the physical
+# interfaces (Wi-Fi vs Ethernet), ifconfig supplies the addresses.
+{
+  networksetup -listallhardwareports 2>/dev/null
+  echo "===IFCONFIG==="
+  ifconfig
+} | awk -v lan="$C_LAN" -v ts="$C_TS" -v vpn="$C_VPN" -v vm="$C_VM" \
+        -v dim="$C_DIM" -v off="$C_OFF" '
+  function emit(color, icon, kind, iface, addr) {
+    printf "%s%s  %-11s%s %s%-10s%s %s%s%s\n",
+           color, icon, kind, off, dim, iface, off, color, addr, off
+  }
+  section == 1 && /^Hardware Port: / { p = substr($0, 16) }
+  section == 1 && /^Device: /        { port[$2] = p }
+  /^===IFCONFIG===$/                 { section = 2; next }
+  section == 2 && /^[a-z]/           { iface = substr($1, 1, length($1) - 1) }
+  section == 2 && /^\tinet / && $2 != "127.0.0.1" {
+    addr = $2
+    # Tailscale hands out 100.64.0.0/10 (CGNAT); other utun* are plain VPNs.
+    if (addr ~ /^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\./)
+      emit(ts, "󰖂", "Tailscale", iface, addr)
+    else if (iface ~ /^utun/)
+      emit(vpn, "󰦝", "VPN", iface, addr)
+    else if (iface ~ /^bridge/)
+      emit(vm, "󰡨", "VM bridge", iface, addr)
+    else if (port[iface] ~ /Wi-Fi/)
+      emit(lan, "", "Wi-Fi", iface, addr)
+    else
+      emit(lan, "󰈀", "LAN", iface, addr)
+  }
+  BEGIN { section = 1 }
 '
 
 # Public: asked per family, since a v6-preferring network hides the v4 address.
 # ifconfig.me can be down or blocked -- say so instead of printing blank.
 for family in 4 6; do
   addr=$(curl "-$family" -fsS --max-time 3 https://ifconfig.me 2>/dev/null) || addr=""
-  printf "  %-8s %s\n" "pub-v$family" "${addr:-unavailable}"
+  printf "%s%s  %-11s%s %s%-10s%s %s%s%s\n" \
+    "$C_PUB" "" "Public v$family" "$C_OFF" "$C_DIM" "" "$C_OFF" \
+    "$C_PUB" "${addr:-unavailable}" "$C_OFF"
 done
