@@ -32,7 +32,7 @@ format = "[ $ssh_symbol$hostname]($style)"
 style = "bold fg:host"
 ssh_symbol = "󰢹 "
 # 沒列到的機器就直接顯示原始 hostname
-aliases = { "SammydeMacBook-Pro-9" = "MY" }
+aliases = { "SammydeMacBook-Pro-9" = "MY", "TWTP1HWS1104" = "WORK" }
 
 [directory]
 format = "[ $path]($style)[$read_only]($read_only_style)"
