@@ -99,6 +99,8 @@ alias ...='cd ../..'
 alias vi='nvim'
 alias vim='nvim'
 alias cc='claude'
+# 工作帳號。auth 獨立，設定共用 —— ~/.claude-work/ 裡是指回 ~/.claude 的 symlink
+alias ccw='CLAUDE_CONFIG_DIR="$HOME/.claude-work" claude'
 alias oc='ocx opencode'
 alias dot='cd "$HOME/.dotfiles"'
 

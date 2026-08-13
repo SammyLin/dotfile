@@ -237,6 +237,24 @@ install_herdr_plugins() {
   fi
 }
 
+# The `ccw` alias runs Claude Code against ~/.claude-work so the work account's
+# credentials stay separate from the personal one. Config is meant to be shared,
+# not duplicated, so everything except auth and history is symlinked back to
+# ~/.claude — install a plugin on either side and both see it.
+setup_claude_work_config() {
+  local main="$HOME/.claude" work="$HOME/.claude-work"
+  [[ -d "$main" ]] || { echo "  skip  ~/.claude not found"; return; }
+
+  mkdir -p "$work"
+  local f
+  for f in settings.json CLAUDE.md RTK.md statusline.js \
+           plugins skills hooks parked-skills workflows lib .agents; do
+    [[ -e "$main/$f" ]] || continue
+    link "$main/$f" "$work/$f"
+  done
+  echo "  run 'ccw' in a new shell to sign in to the work account"
+}
+
 NO_BREW=0
 RECONFIG=0
 for arg in "$@"; do
@@ -275,6 +293,9 @@ link "$DIR/herdr/sounds"      "$HOME/.config/herdr/sounds"
 link "$DIR/orca/keybindings.json" "$HOME/.orca/keybindings.json"
 
 install_herdr_plugins
+
+echo "==> claude work account config (~/.claude-work)"
+setup_claude_work_config
 
 echo "==> machine integrations → $LOCAL"
 migrate_machine_integrations
