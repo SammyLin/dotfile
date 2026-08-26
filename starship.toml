@@ -6,6 +6,7 @@ format = """\
 $hostname\
 $directory\
 ( $git_branch$git_status)\
+$terraform\
 $cmd_duration
 [╰─](fg:frame)$character\
 """
@@ -21,6 +22,7 @@ dir = "#cba6f7"
 git = "#a6e3a1"
 git_status = "#f9e2af"
 duration = "#f5c2e7"
+tofu = "#fab387"
 
 [character]
 success_symbol = "[](fg:frame)"
@@ -84,6 +86,7 @@ disabled = true
 [gcloud]
 disabled = true
 [terraform]
-disabled = true
+format = "[ 󱁢 $workspace]($style)"
+style = "bold fg:tofu"
 [package]
 disabled = true
