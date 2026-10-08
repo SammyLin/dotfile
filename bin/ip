@@ -52,10 +52,57 @@ fi
 '
 
 # Public: asked per family, since a v6-preferring network hides the v4 address.
-# ifconfig.me can be down or blocked -- say so instead of printing blank.
+# Several services in parallel: a dual-WAN / load-balanced network can exit
+# through different ISPs per connection, so one service alone can mislead.
+SERVICES=(ifconfig.me ipinfo.io/ip icanhazip.com api64.ipify.org ifconfig.co)
+tmp=$(mktemp -d) && trap 'rm -rf "$tmp"' EXIT
 for family in 4 6; do
-  addr=$(curl "-$family" -fsS --max-time 3 https://ifconfig.me 2>/dev/null) || addr=""
-  printf "%s%s  %-11s%s %s%-10s%s %s%s%s\n" \
-    "$C_PUB" "" "Public v$family" "$C_OFF" "$C_DIM" "" "$C_OFF" \
-    "$C_PUB" "${addr:-unavailable}" "$C_OFF"
+  for svc in "${SERVICES[@]}"; do
+    curl "-$family" -fsS --max-time 3 "https://$svc" 2>/dev/null \
+      | tr -d '[:space:]' > "$tmp/$family-${svc%%/*}" &
+  done
 done
+wait
+
+for family in 4 6; do
+  # macOS curl -6 can fall back to a v4-mapped address, so keep only real v6.
+  [[ $family == 4 ]] && want='^[0-9.]+$' || want=':'
+  # addr<TAB>svc,svc per distinct address
+  rows=$(for svc in "${SERVICES[@]}"; do
+           addr=$(<"$tmp/$family-${svc%%/*}")
+           [[ $addr =~ $want ]] && printf '%s\t%s\n' "$addr" "${svc%%/*}"
+         done | awk -F'\t' '{s[$1] = s[$1] ? s[$1] "," $2 : $2} END {for (a in s) print a "\t" s[a]}')
+  [[ -z $rows ]] && rows=$'unavailable\t'
+  n=$(wc -l <<<"$rows")
+  while IFS=$'\t' read -r addr svcs; do
+    note=$svcs
+    (( n > 1 )) && note="$svcs  ⚠ services disagree (multi-WAN / proxy?)"
+    printf "%s%s  %-11s%s %s%-10s%s %s%s%s %s%s%s\n" \
+      "$C_PUB" "" "Public v$family" "$C_OFF" "$C_DIM" "" "$C_OFF" \
+      "$C_PUB" "$addr" "$C_OFF" "$C_DIM" "$note" "$C_OFF"
+  done <<<"$rows"
+done
+
+# A sticky multi-WAN shows only one exit at a time, so remember every public
+# v4 seen behind this gateway and list the others too. Keyed by the gateway's
+# MAC, not its IP: home and office routers can share 192.168.1.1-style IPs.
+# Format: gateway-mac<TAB>addr<TAB>last-seen
+hist=${XDG_CACHE_HOME:-$HOME/.cache}/ip-public.tsv
+gw_ip=$(route -n get default 2>/dev/null | awk '/gateway:/ {print $2}')
+gw=$([[ -n $gw_ip ]] && arp -n "$gw_ip" 2>/dev/null | awk '$4 ~ /:/ {print $4}')
+now_addrs=$(for svc in "${SERVICES[@]}"; do
+              addr=$(<"$tmp/4-${svc%%/*}"); [[ $addr =~ ^[0-9.]+$ ]] && echo "$addr"
+            done | sort -u)
+if [[ -n $gw ]]; then
+  mkdir -p "${hist%/*}" && touch "$hist"
+  stamp=$(date '+%F %R')
+  { cat "$hist"; while read -r a; do [[ -n $a ]] && printf '%s\t%s\t%s\n' "$gw" "$a" "$stamp"; done <<<"$now_addrs"; } \
+    | awk -F'\t' '{last[$1 FS $2] = $3} END {for (k in last) print k FS last[k]}' | sort > "$hist.new" \
+    && mv "$hist.new" "$hist"
+  awk -F'\t' -v gw="$gw" '$1 == gw {print $2 "\t" $3}' "$hist" | while IFS=$'\t' read -r addr seen; do
+    grep -qxF "$addr" <<<"$now_addrs" && continue
+    printf "%s%s  %-11s%s %s%-10s%s %s%s%s %s%s%s\n" \
+      "$C_DIM" "" "Also seen" "$C_OFF" "$C_DIM" "" "$C_OFF" \
+      "$C_PUB" "$addr" "$C_OFF" "$C_DIM" "last $seen via gw $gw_ip" "$C_OFF"
+  done
+fi
